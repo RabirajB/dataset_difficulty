@@ -134,10 +134,11 @@ class CallMeSexistButTransformation(object):
         self.output_dir = output_dir
         self.input_dir = input_dir
     
-    def transform(self):
+    def transform(self, x_col, y_col):
         df = pd.read_csv(os.path.join(self.input_dir, "sexism_data.csv"))
-        df['numeric_labels'] = df['sexist'].map({False: 0, True: 1})
-        X = df[['text']]
+        dict_map = {e : i for i, e in enumerate(df[y_col].unique().tolist())}
+        df['numeric_labels'] = df[y_col].map(dict_map)
+        X = df[[x_col]]
         y = df[['numeric_labels']]
         splitter = StratifiedShuffleSplit(n_splits = 1, test_size = 0.2, random_state = 42) # For reproducing experiments
         for train_indices, test_indices in splitter.split(X, y):
@@ -384,41 +385,48 @@ if __name__ == "__main__":
     os.makedirs('data', exist_ok=True)   
 
     parser.add_argument('--raw_data_dir', help='raw_data directory', required=True, type=str)
+    parser.add_argument('--x_column', help = 'x column name', required = False, type = str)
+    parser.add_argument('--y_column', help = 'y column name', required = False, type = str)
     args = parser.parse_args()
     data_dir = args.raw_data_dir
+    x_col = args.x_column 
+    y_col = args.y_column
+    # Handling the case of no string and empty string inputs
+    if x_col and y_col and len(x_col) > 0 and len(y_col) > 0: 
+        CallMeSexistButTransformation(data_dir, data_dir).transform(x_col, y_col)
+    else:  
+        SNLIStandardTransformation(data_dir).transform()
+        SNLINullTransformation(data_dir).transform()
+        SNLIHypothesisOnlyTransformation(data_dir).transform()
+        SNLIPremiseOnlyTransformation(data_dir).transform()
+        SNLIRawOverlapTransformation(data_dir).transform()
+        SNLIShuffleTransformation(data_dir).transform()
+
+        DWMWStandardTransformation(data_dir).transform()
+        DWMWNullTransformation(data_dir).transform()
+        DWMWVocabTransformation(data_dir).transform()
+        DWMWSentimentVocabTransformation(data_dir).transform()
+        DWMWSentimentTransformation(data_dir).transform()
     
-    SNLIStandardTransformation(data_dir).transform()
-    SNLINullTransformation(data_dir).transform()
-    SNLIHypothesisOnlyTransformation(data_dir).transform()
-    SNLIPremiseOnlyTransformation(data_dir).transform()
-    SNLIRawOverlapTransformation(data_dir).transform()
-    SNLIShuffleTransformation(data_dir).transform()
+        COLAStandardTransformation(data_dir).transform()
+        COLANullTransformation(data_dir).transform()
+        COLAShuffleTransformation(data_dir).transform()
+    
+        MultiNLIStandardTransformation(data_dir).transform()
+        MultiNLINullTransformation(data_dir).transform()
+        
 
-    DWMWStandardTransformation(data_dir).transform()
-    DWMWNullTransformation(data_dir).transform()
-    DWMWVocabTransformation(data_dir).transform()
-    DWMWSentimentVocabTransformation(data_dir).transform()
-    DWMWSentimentTransformation(data_dir).transform()
-  
-    COLAStandardTransformation(data_dir).transform()
-    COLANullTransformation(data_dir).transform()
-    COLAShuffleTransformation(data_dir).transform()
-   
-    MultiNLIStandardTransformation(data_dir).transform()
-    MultiNLINullTransformation(data_dir).transform()
-    CallMeSexistButTransformation(data_dir, data_dir).transform()
+        for suffix in ['_b', '_c', '_d', '_e']:
+            SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.99, suffix=suffix).transform()
+            SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.8, suffix=suffix).transform()
+            SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.6, suffix=suffix).transform()
+            SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.4, suffix=suffix).transform()
+            SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.2, suffix=suffix).transform()
+            SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.05, suffix=suffix).transform()
 
-    for suffix in ['_b', '_c', '_d', '_e']:
-        SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.99, suffix=suffix).transform()
-        SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.8, suffix=suffix).transform()
-        SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.6, suffix=suffix).transform()
-        SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.4, suffix=suffix).transform()
-        SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.2, suffix=suffix).transform()
-        SNLIStandardTransformation(f'{data_dir}/frac', train_size=0.05, suffix=suffix).transform()
-
-        SNLINullTransformation(f'{data_dir}/frac', train_size=0.99, suffix=suffix).transform()
-        SNLINullTransformation(f'{data_dir}/frac', train_size=0.8, suffix=suffix).transform()
-        SNLINullTransformation(f'{data_dir}/frac', train_size=0.6, suffix=suffix).transform()
-        SNLINullTransformation(f'{data_dir}/frac', train_size=0.4, suffix=suffix).transform()
-        SNLINullTransformation(f'{data_dir}/frac', train_size=0.2, suffix=suffix).transform()
-        SNLINullTransformation(f'{data_dir}/frac', train_size=0.05, suffix=suffix).transform()
+            SNLINullTransformation(f'{data_dir}/frac', train_size=0.99, suffix=suffix).transform()
+            SNLINullTransformation(f'{data_dir}/frac', train_size=0.8, suffix=suffix).transform()
+            SNLINullTransformation(f'{data_dir}/frac', train_size=0.6, suffix=suffix).transform()
+            SNLINullTransformation(f'{data_dir}/frac', train_size=0.4, suffix=suffix).transform()
+            SNLINullTransformation(f'{data_dir}/frac', train_size=0.2, suffix=suffix).transform()
+            SNLINullTransformation(f'{data_dir}/frac', train_size=0.05, suffix=suffix).transform()
