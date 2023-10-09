@@ -130,12 +130,13 @@ class SNLIStandardTransformation(SNLITransformation):
         return example
 
 class CallMeSexistButTransformation(object):
-    def __init__(self, output_dir, input_dir):
+    def __init__(self, output_dir, input_dir, dataset):
         self.output_dir = output_dir
         self.input_dir = input_dir
+        self.dataset = dataset
     
     def transform(self, x_col, y_col):
-        df = pd.read_csv(os.path.join(self.input_dir, "sexism_data.csv"))
+        df = pd.read_csv(os.path.join(self.input_dir, self.dataset))
         dict_map = {e : i for i, e in enumerate(df[y_col].unique().tolist())}
         df['numeric_labels'] = df[y_col].map(dict_map)
         X = df[[x_col]]
@@ -148,8 +149,8 @@ class CallMeSexistButTransformation(object):
             y_test = y.loc[test_indices]
         train_df = pd.concat([X_train, y_train], axis = 1).reset_index(drop = True)
         test_df = pd.concat([X_test, y_test], axis = 1).reset_index(drop = True)
-        train_df.to_csv(os.path.join(self.output_dir, "sexist_data_train.csv"), index = False)
-        test_df.to_csv(os.path.join(self.output_dir, "sexist_data_test.csv"), index = False)  
+        train_df.to_csv(os.path.join(self.output_dir, f"{self.dataset}_train.csv"), index = False)
+        test_df.to_csv(os.path.join(self.output_dir, f"{self.dataset}_test.csv"), index = False)  
         return "Done"
 
 
@@ -387,13 +388,15 @@ if __name__ == "__main__":
     parser.add_argument('--raw_data_dir', help='raw_data directory', required=True, type=str)
     parser.add_argument('--x_column', help = 'x column name', required = False, type = str)
     parser.add_argument('--y_column', help = 'y column name', required = False, type = str)
+    parser.add_argument('--dataset_name', help = "dataset name", required = False, type = str)
     args = parser.parse_args()
     data_dir = args.raw_data_dir
     x_col = args.x_column 
     y_col = args.y_column
+    dataset_name = args.dataset_name
     # Handling the case of no string and empty string inputs
-    if x_col and y_col and len(x_col) > 0 and len(y_col) > 0: 
-        CallMeSexistButTransformation(data_dir, data_dir).transform(x_col, y_col)
+    if x_col and y_col and len(x_col) > 0 and len(y_col) > 0 and dataset_name == 'sexism_data.csv': 
+        CallMeSexistButTransformation(data_dir, data_dir, dataset= dataset_name).transform(x_col, y_col)
     else:  
         SNLIStandardTransformation(data_dir).transform()
         SNLINullTransformation(data_dir).transform()
