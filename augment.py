@@ -149,8 +149,8 @@ class CallMeSexistButTransformation(object):
             y_test = y.loc[test_indices]
         train_df = pd.concat([X_train, y_train], axis = 1).reset_index(drop = True)
         test_df = pd.concat([X_test, y_test], axis = 1).reset_index(drop = True)
-        train_df.to_csv(os.path.join(self.output_dir, f"{self.dataset}_train.csv"), index = False)
-        test_df.to_csv(os.path.join(self.output_dir, f"{self.dataset}_test.csv"), index = False)  
+        train_df.to_csv(os.path.join(self.output_dir, f"{self.dataset[:self.dataset.index('.csv')]}_train.csv"), index = False)
+        test_df.to_csv(os.path.join(self.output_dir, f"{self.dataset[:self.dataset.index('.csv')]}_test.csv"), index = False)  
         return "Done"
 
 
